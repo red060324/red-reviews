@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
+import static com.hmdp.utils.RedisConstants.CACHE_SHOP_TTL;
 
 /**
  * <p>
@@ -38,8 +41,22 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         if (shop == null){
             return Result.fail("店铺不存在");
         }
-        //存在，数据写入redis，返回
-        redisTemplate.opsForValue().set(CACHE_SHOP_KEY + id,shop);
+        //存在，数据写入redis，返回 并设置超时时间
+        redisTemplate.opsForValue().set(CACHE_SHOP_KEY + id,shop,CACHE_SHOP_TTL, TimeUnit.MINUTES);
         return Result.ok(shop);
+    }
+
+    @Override
+    public Result updateShop(Shop shop) {
+        Long id = shop.getId();
+        if (id == null){
+            return Result.fail("店铺ID为空");
+        }
+        //更新数据库
+        updateById(shop);
+
+        //删除缓存
+        redisTemplate.delete(CACHE_SHOP_KEY + id);
+        return Result.ok();
     }
 }
