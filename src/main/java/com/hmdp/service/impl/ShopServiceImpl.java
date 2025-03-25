@@ -1,5 +1,6 @@
 package com.hmdp.service.impl;
 
+import ch.qos.logback.core.util.TimeUtil;
 import com.hmdp.dto.Result;
 import com.hmdp.entity.Shop;
 import com.hmdp.mapper.ShopMapper;
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
-import static com.hmdp.utils.RedisConstants.CACHE_SHOP_TTL;
+import static com.hmdp.utils.RedisConstants.*;
 
 /**
  * <p>
@@ -30,15 +30,25 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     public Result queryById(Long id) {
         //从redis中查询缓存
-        Shop shop = (Shop) redisTemplate.opsForValue().get(CACHE_SHOP_KEY + id);
+        Object shopObject =redisTemplate.opsForValue().get(CACHE_SHOP_KEY + id);
         //存在，直接返回
-        if (shop != null){
+        Shop shop;
+
+        if (shopObject != null && !shopObject.getClass().equals(String.class)){
+            shop = (Shop) shopObject;
             return Result.ok(shop);
         }
+        //判断命中是否为空值
+        if (shopObject != null &&shopObject.getClass().equals(String.class)&& ((String) shopObject).isEmpty()){
+            return Result.fail("店铺信息不存在");
+        }
+
         //不存在，查询数据库
         shop = getById(id);
         //不存在，返回错误
         if (shop == null){
+            //如果不存在，在Redis中返回空值
+            redisTemplate.opsForValue().set(CACHE_SHOP_KEY + id,"",CACHE_NULL_TTL, TimeUnit.MINUTES);
             return Result.fail("店铺不存在");
         }
         //存在，数据写入redis，返回 并设置超时时间
