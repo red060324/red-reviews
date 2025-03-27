@@ -58,9 +58,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         //不存在，查询数据库
 
         //获取互斥锁
-        //失败，等待，并重试
+
         String lockKey = LOCK_SHOP_KEY + id;
         try {
+            //失败，等待，并重试
             if (!getLock(lockKey)) {
                 Thread.sleep(50);
                 return queryWithMutex(id);
