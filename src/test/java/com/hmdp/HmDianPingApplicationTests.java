@@ -53,8 +53,8 @@ class HmDianPingApplicationTests {
 
     @Test
     void saveShop(){
-        Shop shop = service.getById(1);
-        cacheClient.setWithLogicalExpire(CACHE_SHOP_KEY + 1L,shop,10L, TimeUnit.SECONDS);
+        Shop shop = service.getById(3);
+        cacheClient.setWithLogicalExpire(CACHE_SHOP_KEY + 3L,shop,10L, TimeUnit.SECONDS);
 
     }
 }

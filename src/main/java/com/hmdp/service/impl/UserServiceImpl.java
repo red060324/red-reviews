@@ -45,7 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Result sendCode(String phone, HttpSession session) {
         //校验手机号
-        if (!RegexUtils.isPhoneInvalid(phone)) {
+        if (RegexUtils.isPhoneInvalid(phone)) {
             //如果不符合，返回错误信息
             return Result.fail("手机号格式错误");
         }
@@ -65,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result login(LoginFormDTO loginForm, HttpSession session) {
         //校验手机号
         String phone = loginForm.getPhone();
-        if (!RegexUtils.isPhoneInvalid(phone)) {
+        if (RegexUtils.isPhoneInvalid(phone)) {
             //如果不符合，返回错误信息
             return Result.fail("手机号格式错误");
         }
